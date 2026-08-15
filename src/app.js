@@ -10,6 +10,9 @@ import ratingRoutes from "./routes/rating.routes.js";
 import adminDashboardRoutes from "./routes/admin.dashboard.routes.js";
 import ownerDashboardRoutes from "./routes/owner.dashboard.routes.js";
 
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
+
 import cookieParser from "cookie-parser";
 
 const app = express();
@@ -27,6 +30,14 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(morgan("dev"));
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    explorer: true,
+  })
+);
+
 
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoutes);
@@ -41,6 +52,10 @@ app.get("/api/health", (req, res) => {
     success: true,
     message: "Store Rating API is running",
   });
+});
+
+app.get("/api-docs/swagger.json", (req, res) => {
+  res.json(swaggerSpec);
 });
 
 export default app;

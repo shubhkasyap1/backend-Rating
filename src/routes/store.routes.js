@@ -15,13 +15,60 @@ import { requireRole } from "../middleware/role.middleware.js";
 
 const router = express.Router();
 
+/**
+ * @openapi
+ * /api/stores:
+ *   get:
+ *     tags:
+ *       - Stores
+ *     summary: Get stores
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - name: search
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Search stores by name
+ *       - name: address
+ *         in: query
+ *         schema:
+ *           type: string
+ *         description: Filter stores by address
+ *       - name: page
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *       - name: limit
+ *         in: query
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *     responses:
+ *       200:
+ *         description: Store list
+ */
+
 // Anyone logged in can view stores
+router.get("/", authenticate, getStores);
+
+// Store owner routes — MUST come before "/:id"
 router.get(
-  "/",
+  "/owner/my",
   authenticate,
-  getStores
+  requireRole("STORE_OWNER"),
+  getOwnerStores
 );
 
+router.get(
+  "/owner/my/:id",
+  authenticate,
+  requireRole("STORE_OWNER"),
+  getOwnerStoreById
+);
+
+// Get a single store
 router.get(
   "/:id",
   authenticate,
@@ -50,20 +97,6 @@ router.delete(
   authenticate,
   requireRole("ADMIN"),
   deleteStore
-);
-
-router.get(
-  "/owner/my",
-  authenticate,
-  requireRole("STORE_OWNER"),
-  getOwnerStores
-);
-
-router.get(
-  "/owner/my/:id",
-  authenticate,
-  requireRole("STORE_OWNER"),
-  getOwnerStoreById
 );
 
 export default router;
